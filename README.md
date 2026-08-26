@@ -66,3 +66,32 @@ in the side panel along with sacred-day call-outs.
 Built inside an AI sandbox with no durable server — git history here only
 survives via the zip export you download, not automatically. See commit
 log for what's actually changed.
+
+## 3. As an iframe embed — for non-coders (Squarespace, Wix, Carrd, Notion...)
+
+`capitalism-calendar-embed.html` is a single self-contained file — the
+widget bundle is inlined directly into the page, so it's one file to host,
+with zero other assets to upload.
+
+**You have to host this file somewhere with a public URL first** — an AI
+sandbox can't serve it live. Fastest options: drag the file onto
+[Netlify Drop](https://app.netlify.com/drop) (no login needed, gives you a
+URL in seconds), or upload it to Cloudflare Pages / your existing HEME
+static hosting alongside the other pages.
+
+Once it has a URL, embedding it is copy-paste for anyone, no code required:
+
+- **Squarespace:** Add an "Embed Block" → paste the URL directly. (Or a
+  Code Block with the iframe snippet below, on plans that support it.)
+- **Wix / Carrd / Webflow / Notion:** same idea — an "Embed" or "iframe"
+  block that takes a URL.
+- **Anywhere raw HTML is allowed:**
+  ```html
+  <iframe src="https://your-domain.com/capitalism-calendar-embed.html"
+          width="100%" height="900" style="border:0;" loading="lazy">
+  </iframe>
+  ```
+
+900px height is a reasonable default — the layout is responsive and drops
+to a single column below ~1000px wide, so it holds up in a narrower
+Squarespace content column too.

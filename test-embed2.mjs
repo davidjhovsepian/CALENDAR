@@ -1,0 +1,12 @@
+import { JSDOM } from "jsdom";
+import fs from "fs";
+const html = fs.readFileSync("capitalism-calendar-embed.html", "utf8");
+const dom = new JSDOM(html, { runScripts: "dangerously", resources: "usable", url: "https://example.com/" });
+global.window = dom.window; global.document = dom.window.document;
+global.customElements = dom.window.customElements; global.HTMLElement = dom.window.HTMLElement;
+global.requestAnimationFrame = dom.window.requestAnimationFrame || ((cb) => setTimeout(cb, 0));
+await new Promise((r) => setTimeout(r, 400));
+const shadow = dom.window.document.querySelector("capitalism-calendar").shadowRoot;
+console.log("responsive breakpoint present in shadow DOM CSS:", /min-width:1000px/.test(shadow.innerHTML));
+console.log("grid layout class present:", /om-grid/.test(shadow.innerHTML));
+process.exit(0);
