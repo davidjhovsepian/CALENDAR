@@ -1,0 +1,9 @@
+node_modules/
+package.json
+package-lock.json
+*.png
+t.mjs
+ssr.mjs
+verify.mjs
+test-widget.mjs
+moontest*.svg
