@@ -20,6 +20,11 @@ see doctrine lines in `CapitalismCalendar.jsx` for the voice.
 ## Files
 - `CapitalismCalendar.jsx` — the actual component. Everything lives here
   (data, date math, rendering, CSS-in-JS). No build step needed to read it.
+- `src/emoji-hieroglyphics/` — vendored copy of the encode/decode engine
+  and compiled lexicon from `davidjhovsepian/emoji`, plus a thin
+  `glyphTranslate.js` wrapper (`glyphText()`, `glyphName()`). Powers the
+  "𓂀 Scribe Mode" toggle. Static data, no network call — see "Constraints"
+  below and the README's "Scribe Mode" section for why and how to re-sync.
 - `element.jsx` → bundled to `dist-capitalism-calendar.js` — Web Component
   wrapper (`<capitalism-calendar>`) so the calendar works outside React.
   Rebuild after any `CapitalismCalendar.jsx` change:
@@ -92,9 +97,12 @@ handoff — ask him, or check recent chat, before assuming which one.
 
 ## Constraints worth knowing
 - No external API calls at runtime — the whole thing is self-contained
-  client-side JS (date math + a deterministic hash-based I Ching draw).
-  Keep it that way; it's part of why the iframe/embed version works
-  without CORS or hosting complications.
+  client-side JS (date math + a deterministic hash-based I Ching draw,
+  plus the vendored Emoji Hieroglyphics engine). Keep it that way; it's
+  part of why the iframe/embed version works without CORS or hosting
+  complications. The emoji translator is bundled as static data for
+  exactly this reason — don't "upgrade" it to a fetch() against a live
+  API later without re-reading why it isn't one already.
 - No localStorage/sessionStorage if this ever runs as a Claude.ai artifact
   again — use React state only. Not a constraint for a real deployed app,
   but worth knowing if this file gets copied back into that context.
