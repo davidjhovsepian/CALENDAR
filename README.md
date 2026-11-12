@@ -55,6 +55,36 @@ handled throughout (February's arc widens correctly, no drift at year end).
 Daily I Ching oracle (deterministic per-date draw, full 64 hexagrams) lives
 in the side panel along with sacred-day call-outs.
 
+## Scribe Mode — Emoji Hieroglyphics translation
+
+A "𓂀 Scribe Mode" toggle in the side panel re-renders the calendar's text
+(month/weekday names, god names and doctrine, holiday names, the I Ching
+reading, UI labels) in Emoji Hieroglyphics — the constructed logographic
+script from `davidjhovsepian/emoji`. Toggling back to "🔤 Common Tongue"
+restores plain English; nothing else about the calendar changes.
+
+This is **vendored, not an API call**: `src/emoji-hieroglyphics/engine.js`
+and `lexicon.json` are a direct copy of that repo's pure encode/decode
+engine and compiled lexicon, consumed locally via
+`src/emoji-hieroglyphics/glyphTranslate.js`. That repo doesn't actually
+expose a live translate endpoint (its deployed Worker is a separate
+"offerings" feature, not `/encode`/`/decode`), and even if it did, calling
+it at runtime would violate this project's own no-external-API-calls rule
+— so bundling the engine as static data was the correct integration, not
+a fallback. Unknown/invented words (this app has plenty — "capitalism,"
+"oracle," "hexagram") degrade gracefully to the engine's own primitive
+glyphs rather than failing, by that script's existing design.
+
+Two translation paths are used, matching real Egyptian scribal practice:
+- **`glyphText()`** — logographic lookup for ordinary words/doctrine, via
+  the compiled lexicon.
+- **`glyphName()`** — phonetic sign-per-letter spelling for deity names
+  (Janus, Thor, Sopdet, Osiris, ...), which correctly have no logogram.
+
+To pick up a newer lexicon: copy the latest `src/engine.js` and
+`data/lexicon.json` from the emoji repo over the two files in
+`src/emoji-hieroglyphics/`. Nothing else needs to change.
+
 ## Open threads
 - October: Anubis vs. Nephthys (gender-balance + narrative fit both lean Nephthys)
 - Long Count / precessional Age ring — planned as an innermost ring wrapping

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { glyphText, glyphName } from "./src/emoji-hieroglyphics/glyphTranslate.js";
 
 /* ============================================================================
    THE CAPITALISM CALENDAR
@@ -335,6 +336,15 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
   const [tick, setTick] = useState(() => Date.now());
   const [offsetDays, setOffsetDays] = useState(0);
   const [selected, setSelected] = useState(null); // null => today's oracle
+  const [glyphMode, setGlyphMode] = useState(false); // Scribe Mode — render in Emoji Hieroglyphics
+
+  // tr() for ordinary prose/common nouns (logographic lexicon lookup,
+  // graceful fallback for unknown words). trN() for proper names — deities
+  // have no logogram, so they're spelled phonetically sign-per-letter
+  // instead (the real Egyptian convention this script imitates). Both are
+  // no-ops when Scribe Mode is off, so nothing downstream needs to branch.
+  const tr = useCallback((s) => (glyphMode ? glyphText(s) : s), [glyphMode]);
+  const trN = useCallback((s) => (glyphMode ? glyphName(s) : s), [glyphMode]);
 
   useEffect(() => {
     const id = setInterval(() => setTick(Date.now()), 1000);
@@ -379,41 +389,41 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
     if (selected?.kind === "zodiac") {
       const z = ZODIAC[selected.i];
       return {
-        eyebrow: "Ring I · The Beast",
-        title: `${z.emoji}  ${z.name}`,
-        sub: `${z.han} · ${cycleBase + selected.i} · twelve-year cycle`,
-        body: z.doctrine,
+        eyebrow: tr("Ring I · The Beast"),
+        title: `${z.emoji}  ${tr(z.name)}`,
+        sub: `${z.han} · ${cycleBase + selected.i} · ${tr("twelve-year cycle")}`,
+        body: tr(z.doctrine),
       };
     }
     if (selected?.kind === "month") {
       const m = MONTH_GODS[selected.i];
       return {
-        eyebrow: `Ring III · Month ${m.rn}`,
-        title: MONTH_NAMES[selected.i],
-        sub: `${m.god} — ${m.domain}`,
-        body: `${m.doctrine} (${m.etym})`,
+        eyebrow: `${tr("Ring III · Month")} ${m.rn}`,
+        title: tr(MONTH_NAMES[selected.i]),
+        sub: `${trN(m.god)} — ${tr(m.domain)}`,
+        body: `${tr(m.doctrine)} (${m.etym})`,
       };
     }
     if (selected?.kind === "week") {
       const w = DAY_GODS[selected.i];
       return {
-        eyebrow: "Ring IV · The Planetary Day",
-        title: w.day,
-        sub: `${w.glyph} ${w.god} — ${w.domain} · Roman equivalent: ${w.latin}`,
-        body: w.doctrine,
+        eyebrow: tr("Ring IV · The Planetary Day"),
+        title: tr(w.day),
+        sub: `${w.glyph} ${trN(w.god)} — ${tr(w.domain)} · ${tr("Roman equivalent")}: ${trN(w.latin)}`,
+        body: tr(w.doctrine),
       };
     }
     if (selected?.kind === "feast") {
       const f = sancta[selected.i];
       return {
-        eyebrow: "The Sanctorale",
-        title: f.name,
+        eyebrow: tr("The Sanctorale"),
+        title: tr(f.name),
         sub: f.date.toLocaleDateString(undefined, { month: "long", day: "numeric" }),
-        body: f.doctrine,
+        body: tr(f.doctrine),
       };
     }
     return null;
-  }, [selected, sancta, cycleBase]);
+  }, [selected, sancta, cycleBase, tr, trN]);
 
   const H = HEXAGRAMS[oracle.primary];
   const H2 = HEXAGRAMS[oracle.resulting];
@@ -471,7 +481,7 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
                     />
                     <g transform={`rotate(${a} ${C} ${C})`}>
                       <text x={C} y={C - 366} className="om-emoji" fontSize="28" textAnchor="middle">{z.emoji}</text>
-                      <text x={C} y={C - 344} className="om-godname" textAnchor="middle" fill={active ? "#F0D97A" : "#C9A227"} opacity={active ? 1 : 0.85}>{z.name.toUpperCase()}</text>
+                      <text x={C} y={C - 344} className="om-godname" textAnchor="middle" fill={active ? "#F0D97A" : "#C9A227"} opacity={active ? 1 : 0.85}>{tr(z.name).toUpperCase()}</text>
                       <text x={C} y={C - 329} className="om-year" textAnchor="middle" fill={active ? "#E5C86A" : "#8C7A3E"}>{z.han} {cycleBase + i}</text>
                     </g>
                   </g>
@@ -491,7 +501,7 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
                     <g transform={`rotate(${a} ${C} ${C})`}>
                       <circle cx={C} cy={C - 303} r={isToday ? 6.5 : 4} fill={isToday ? "#F0D97A" : "#0B0910"} stroke={isToday ? "#C81E33" : "#C9A227"} strokeWidth="1.4" />
                     </g>
-                    <title>{h.name}</title>
+                    <title>{tr(h.name)}</title>
                   </g>
                 );
               })}
@@ -514,8 +524,8 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
                     />
                     <g transform={`rotate(${a} ${C} ${C})`}>
                       <text x={C} y={C - 273} className="om-rn" textAnchor="middle" fill={active ? "#E5C86A" : "#8C7A3E"} opacity={active ? 1 : 0.8}>{m.rn}</text>
-                      <text x={C} y={C - 253} className="om-common" textAnchor="middle" fill={active ? "#F0D97A" : "#C9A227"} opacity={active ? 1 : 0.9}>{MONTH_NAMES[i].toUpperCase()}</text>
-                      <text x={C} y={C - 236} className="om-godname" textAnchor="middle" fill={active ? "#E5C86A" : "#9C8535"} opacity={active ? 1 : 0.85}>{m.god}</text>
+                      <text x={C} y={C - 253} className="om-common" textAnchor="middle" fill={active ? "#F0D97A" : "#C9A227"} opacity={active ? 1 : 0.9}>{tr(MONTH_NAMES[i]).toUpperCase()}</text>
+                      <text x={C} y={C - 236} className="om-godname" textAnchor="middle" fill={active ? "#E5C86A" : "#9C8535"} opacity={active ? 1 : 0.85}>{trN(m.god)}</text>
                     </g>
                   </g>
                 );
@@ -540,8 +550,8 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
                     />
                     <g transform={`rotate(${a} ${C} ${C})`}>
                       <text x={C} y={C - 206} className="om-planet" textAnchor="middle" fill={active ? "#F0D97A" : "#9FBFAF"} opacity={active ? 1 : 0.85}>{w.glyph}</text>
-                      <text x={C} y={C - 187} className="om-common" textAnchor="middle" fill={active ? "#F0D97A" : "#C9A227"} opacity={active ? 1 : 0.9}>{w.day.toUpperCase()}</text>
-                      <text x={C} y={C - 171} className="om-godname" textAnchor="middle" fill={active ? "#E5C86A" : "#8FAF9F"} opacity={active ? 1 : 0.85}>{w.god}</text>
+                      <text x={C} y={C - 187} className="om-common" textAnchor="middle" fill={active ? "#F0D97A" : "#C9A227"} opacity={active ? 1 : 0.9}>{tr(w.day).toUpperCase()}</text>
+                      <text x={C} y={C - 171} className="om-godname" textAnchor="middle" fill={active ? "#E5C86A" : "#8FAF9F"} opacity={active ? 1 : 0.85}>{trN(w.god)}</text>
                     </g>
                   </g>
                 );
@@ -570,10 +580,12 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
 
             {/* ---- Plain reading of the present, upright and unrotating ---- */}
             <text x={C} y={C - 116} className="om-svgdate" textAnchor="middle">
-              {`${DAY_GODS[wk.idx].day.slice(0, 3)} ${now.getDate()} ${MONTH_NAMES[monthIdx].slice(0, 3)} ${yr.y}`.toUpperCase()}
+              {glyphMode
+                ? `${tr(DAY_GODS[wk.idx].day)} ${now.getDate()} ${tr(MONTH_NAMES[monthIdx])} ${yr.y}`.toUpperCase()
+                : `${DAY_GODS[wk.idx].day.slice(0, 3)} ${now.getDate()} ${MONTH_NAMES[monthIdx].slice(0, 3)} ${yr.y}`.toUpperCase()}
             </text>
             <text x={C} y={C + 130} className="om-svgphase" textAnchor="middle">
-              {phaseName(phase).toUpperCase()}
+              {tr(phaseName(phase)).toUpperCase()}
             </text>
 
             {/* ---- The Gnomon — the fixed present ---- */}
@@ -588,20 +600,28 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
         {/* ========================= THE READING ========================= */}
         <aside className="om-panel">
           <header className="om-head">
-            <div className="om-eyebrow">The Capitalism Calendar</div>
+            <div className="om-eyebrow">{tr("The Capitalism Calendar")}</div>
             <h1 className="om-date">
               {now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
             </h1>
             <div className="om-stamp">
-              {now.getFullYear()} · {zod.polarity} {zod.element} {ZODIAC[zod.idx].name} · {now.toLocaleTimeString()}
+              {now.getFullYear()} · {tr(zod.polarity)} {tr(zod.element)} {tr(ZODIAC[zod.idx].name)} · {now.toLocaleTimeString()}
             </div>
+            <button
+              className="om-scribe-toggle"
+              onClick={() => setGlyphMode((v) => !v)}
+              aria-pressed={glyphMode}
+              title={glyphMode ? "Return to the common tongue" : "Render in Emoji Hieroglyphics"}
+            >
+              {glyphMode ? "🔤 Common Tongue" : "𓂀 Scribe Mode"}
+            </button>
           </header>
 
           {todayFeast && (
             <div className="om-feast">
-              <span className="om-feast-tag">Sacred Day</span>
-              <strong>{todayFeast.name}</strong>
-              <p>{todayFeast.doctrine}</p>
+              <span className="om-feast-tag">{tr("Sacred Day")}</span>
+              <strong>{tr(todayFeast.name)}</strong>
+              <p>{tr(todayFeast.doctrine)}</p>
             </div>
           )}
 
@@ -611,14 +631,14 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
               <h2>{panel.title}</h2>
               <div className="om-sub">{panel.sub}</div>
               <p className="om-body">{panel.body}</p>
-              <button className="om-back" onClick={() => setSelected(null)}>Return to the reading</button>
+              <button className="om-back" onClick={() => setSelected(null)}>{tr("Return to the reading")}</button>
             </section>
           ) : (
             <section className="om-card">
-              <div className="om-eyebrow">The Terminator · {phaseName(phase)}</div>
+              <div className="om-eyebrow">{tr("The Terminator")} · {tr(phaseName(phase))}</div>
               <div className="om-illum">
                 <div className="om-bar"><span style={{ width: `${illumination(phase) * 100}%` }} /></div>
-                <span className="om-illum-n">{Math.round(illumination(phase) * 100)}% lit</span>
+                <span className="om-illum-n">{Math.round(illumination(phase) * 100)}% {tr("lit")}</span>
               </div>
 
               <div className="om-oracle">
@@ -627,24 +647,24 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
                   <div className="om-hexlabel">{oracle.primary + 1}</div>
                 </div>
                 <div className="om-hextext">
-                  <h2>{H[1]}</h2>
-                  <div className="om-sub">{H[2]}</div>
+                  <h2>{trN(H[1])}</h2>
+                  <div className="om-sub">{tr(H[2])}</div>
                   <div className="om-trig">
-                    {upper[2]} {upper[1]} over {lower[2]} {lower[1]}
+                    {upper[2]} {trN(upper[1])} {tr("over")} {lower[2]} {trN(lower[1])}
                   </div>
                 </div>
               </div>
 
-              <p className="om-body">{H[3]}</p>
-              <div className="om-directive">{H[4]}</div>
+              <p className="om-body">{tr(H[3])}</p>
+              <div className="om-directive">{tr(H[4])}</div>
 
               <div className="om-change">
-                <span className="om-eyebrow">Line {oracle.line + 1} moves →</span>
+                <span className="om-eyebrow">{tr("Line")} {oracle.line + 1} {tr("moves")} →</span>
                 <div className="om-changerow">
                   <Hexagram bits={H2[0]} small />
                   <div>
-                    <strong>{H2[1]}</strong> · {H2[2]}
-                    <p className="om-body om-small">{H2[3]}</p>
+                    <strong>{trN(H2[1])}</strong> · {tr(H2[2])}
+                    <p className="om-body om-small">{tr(H2[3])}</p>
                   </div>
                 </div>
               </div>
@@ -652,14 +672,14 @@ export default function CapitalismCalendar({ zodiacBoundary = "gregorian" } = {}
           )}
 
           <div className="om-controls">
-            <button onClick={() => step(-1)} aria-label="Previous day">‹ Day</button>
+            <button onClick={() => step(-1)} aria-label="Previous day">{"‹ " + tr("Day")}</button>
             <button onClick={() => setOffsetDays(0)} disabled={offsetDays === 0}>
-              {offsetDays === 0 ? "Present" : `Return · ${offsetDays > 0 ? "+" : ""}${offsetDays}d`}
+              {offsetDays === 0 ? tr("Present") : `${tr("Return")} · ${offsetDays > 0 ? "+" : ""}${offsetDays}d`}
             </button>
-            <button onClick={() => step(1)} aria-label="Next day">Day ›</button>
+            <button onClick={() => step(1)} aria-label="Next day">{tr("Day") + " ›"}</button>
           </div>
           <div className="om-foot">
-            Rings turn against a fixed gnomon. Tap any segment to read its doctrine. Arrow keys scry forward and back.
+            {tr("Rings turn against a fixed gnomon. Tap any segment to read its doctrine. Arrow keys scry forward and back.")}
           </div>
         </aside>
       </div>
@@ -737,6 +757,17 @@ const CSS = `
   line-height:1.05; margin:.28em 0 .18em; color:var(--gold-lt); letter-spacing:.01em;
 }
 .om-stamp{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; color:#9C8F72; }
+
+.om-head{ position:relative; padding-right:116px; }
+.om-scribe-toggle{
+  position:absolute; top:0; right:0; background:transparent; border:1px solid rgba(201,162,39,.4);
+  color:var(--gold); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; padding:6px 10px; cursor:pointer; transition:background .18s,color .18s;
+  white-space:nowrap;
+}
+.om-scribe-toggle:hover{ background:var(--oxblood); color:var(--gold-lt); }
+.om-scribe-toggle[aria-pressed="true"]{ background:rgba(201,162,39,.18); color:var(--gold-lt); }
+.om-scribe-toggle:focus-visible{ outline:2px solid var(--gold-lt); outline-offset:2px; }
 
 .om-feast{
   border-left:3px solid var(--crimson); background:linear-gradient(90deg,rgba(200,30,51,.14),transparent);
